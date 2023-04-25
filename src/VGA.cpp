@@ -7,14 +7,14 @@
 #define EXAMPLE_PIN_NUM_VSYNC          3
 #define EXAMPLE_PIN_NUM_DE             0
 #define EXAMPLE_PIN_NUM_PCLK           9
-#define EXAMPLE_PIN_NUM_DATA0          14 // B0
-#define EXAMPLE_PIN_NUM_DATA1          13 // B1
-#define EXAMPLE_PIN_NUM_DATA2          12 // B2
-#define EXAMPLE_PIN_NUM_DATA3          11 // B3
-#define EXAMPLE_PIN_NUM_DATA4          10 // B4
-#define EXAMPLE_PIN_NUM_DATA5          39 // G0
-#define EXAMPLE_PIN_NUM_DATA6          38 // G1
-#define EXAMPLE_PIN_NUM_DATA7          45 // G2
+#define EXAMPLE_PIN_NUM_DATA0          14
+#define EXAMPLE_PIN_NUM_DATA1          13
+#define EXAMPLE_PIN_NUM_DATA2          12
+#define EXAMPLE_PIN_NUM_DATA3          11
+#define EXAMPLE_PIN_NUM_DATA4          10
+#define EXAMPLE_PIN_NUM_DATA5          39
+#define EXAMPLE_PIN_NUM_DATA6          38
+#define EXAMPLE_PIN_NUM_DATA7          45
 #define EXAMPLE_PIN_NUM_DISP_EN        -1
 
 static const char *TAG = "vga";
