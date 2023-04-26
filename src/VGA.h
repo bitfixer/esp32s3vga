@@ -9,7 +9,7 @@ public:
 	VGA() {}
 	~VGA() {}
 
-	bool init(int width, int height, int scale = 2, int bits = 8, int* pins = NULL, bool usePsram = false);
+	bool init(int width, int height, int scale = 2, int hborder = 0, int bits = 8, int* pins = NULL, bool usePsram = false);
 	void vsyncWait();
 	uint8_t* getDrawBuffer();
 
@@ -38,6 +38,8 @@ protected:
 	int _frameScale = 2;
 	int _colorBits = 8;
 	int _bounceBufferLines = 0;
+	int _hBorder = 0;
+	int _vBorder = 0;
 
 	static bool vsyncEvent(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx);
 	static bool bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px, int len_bytes, void* user_ctx);

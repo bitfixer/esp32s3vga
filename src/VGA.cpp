@@ -19,12 +19,17 @@
 
 static const char *TAG = "vga";
 
-bool VGA::init(int width, int height, int scale, int bits, int* pins, bool usePsram) {
+bool VGA::init(int width, int height, int scale, int hborder, int bits, int* pins, bool usePsram) {
 
 	// temp replace
 	_frameScale = scale;
 	_frameWidth = width / _frameScale;
 	_frameHeight = height / _frameScale;
+
+    // testing border
+    _hBorder = hborder;
+    _frameWidth -= (2*_hBorder);
+
 	_screenWidth = width;
 	_screenHeight = height;
     _colorBits = bits;
@@ -185,18 +190,33 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
     if (vga->_colorBits == 3) {
         pixelsPerByte = 2;
     }
-    uint8_t* pptr = vga->_frameBuffers[vga->_frameBufferIndex] + (pos_px / (div*pixelsPerByte));
-    int pixelsToCopy = len_bytes / div;
-    int lines = pixelsToCopy / vga->_frameWidth;
+
+    int screenLineIndex = pos_px / vga->_screenWidth;
+    int bufLineIndex = screenLineIndex / vga->_frameScale;
+    uint8_t* pptr = vga->_frameBuffers[vga->_frameBufferIndex] + (bufLineIndex*vga->_frameWidth/pixelsPerByte);
+    int screenLines = len_bytes / vga->_screenWidth;
+    int lines = screenLines / vga->_frameScale;
 
     if (vga->_frameScale == 1 && vga->_colorBits == 8) {
         // just copy the bytes
-        uint8_t* bbptr = (uint8_t*)bounce_buf;
-        memcpy(bbptr, pptr, len_bytes);
+        if (vga->_hBorder == 0 && vga->_vBorder == 0) {
+            uint8_t* bbptr = (uint8_t*)bounce_buf;
+            memcpy(bbptr, pptr, len_bytes);
+        } else {
+            uint8_t* bbptr = (uint8_t*)bounce_buf;
+            bbptr += vga->_hBorder;
+            for (int i = 0; i < lines; i++) {
+                memcpy(bbptr, pptr, vga->_frameWidth);
+                bbptr += vga->_screenWidth;
+                pptr += vga->_frameWidth;
+            }
+        }
     } else if (vga->_frameScale == 1 && vga->_colorBits == 3) {
         uint8_t* bbptr = (uint8_t*)bounce_buf;
+        bbptr += vga->_hBorder;
         uint8_t pixelBits;
         for (int y = 0; y < lines; y++) {
+            uint8_t* lineptr = bbptr;
             for (int x = 0; x < vga->_frameWidth; x += 10) {
                 // partially unrolled loop for speed
                 pixelBits = *pptr;
@@ -225,12 +245,14 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
                 *(bbptr++) = pixelBits & 0b00000111;
                 pptr++;
             }
+            bbptr = lineptr + vga->_screenWidth;
         }
     } else if (vga->_frameScale == 2 && vga->_colorBits == 8) {
-        uint8_t* bbptr = ( uint8_t*)bounce_buf;
+        uint8_t* bbptr = (uint8_t*)bounce_buf;
+        bbptr += vga->_hBorder*vga->_frameScale;
         for (int y = 0; y < lines; y++) {
             uint8_t* lineptr = bbptr;
-            for (int x = 0; x < vga->_frameWidth; x += 40) {
+            for (int x = 0; x < vga->_frameWidth; x += 10) {
                 // partially unrolled loop for speed
                 *(bbptr++) = *pptr;
                 *(bbptr++) = *(pptr++);
@@ -252,72 +274,14 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
                 *(bbptr++) = *(pptr++);
                 *(bbptr++) = *pptr;
                 *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
-                *(bbptr++) = *pptr;
-                *(bbptr++) = *(pptr++);
             }
-            memcpy(bbptr, lineptr, vga->_screenWidth);
+            bbptr = lineptr + vga->_screenWidth;
+            memcpy(bbptr, lineptr, vga->_frameWidth*vga->_frameScale);
             bbptr += vga->_screenWidth;
         }
     } else if (vga->_frameScale == 2 && vga->_colorBits == 3) {
         uint8_t* bbptr = (uint8_t*)bounce_buf;
+        //bbptr += vga->_hBorder*vga->_frameScale;
         uint8_t pixelBits;
         for (int y = 0; y < lines; y++) {
             uint8_t* lineptr = bbptr;
@@ -359,6 +323,7 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
                 *(bbptr++) = pixelBits & 0b00000111;
                 pptr++;
             }
+            bbptr = lineptr + vga->_screenWidth;
             memcpy(bbptr, lineptr, vga->_screenWidth);
             bbptr += vga->_screenWidth;
         }
