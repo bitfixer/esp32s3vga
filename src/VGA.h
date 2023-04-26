@@ -9,6 +9,7 @@ public:
 	VGA() {}
 	~VGA() {}
 
+	bool initWithSize(int frameWidth, int frameHeight, int bits);
 	bool init(int width, int height, int scale = 2, int hborder = 0, int yborder = 0, int bits = 8, int* pins = NULL, bool usePsram = false);
 	void vsyncWait();
 	uint8_t* getDrawBuffer();

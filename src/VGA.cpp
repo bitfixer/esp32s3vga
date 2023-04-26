@@ -19,6 +19,63 @@
 
 static const char *TAG = "vga";
 
+bool VGA::initWithSize(int frameWidth, int frameHeight, int bits) {
+    int hborder = 9999;
+    int vborder = 9999;
+
+    int rw[6];
+    int rh[6];
+    int best = -1;
+
+    rw[0] = 320;
+    rh[0] = 200;
+
+    rw[1] = 320;
+    rh[1] = 240;
+
+    rw[2] = 400;
+    rh[2] = 300;
+
+    rw[3] = 640;
+    rh[3] = 400;
+
+    rw[4] = 640;
+    rh[4] = 480;
+
+    rw[5] = 800;
+    rh[5] = 600;
+
+    for (int rr = 0; rr < 6; rr++) {
+        if (frameWidth > rw[rr] || frameHeight > rh[rr]) {
+            continue;
+        }
+
+        int hb = (rw[rr] - frameWidth) / 2;
+        int vb = (rh[rr] - frameHeight) / 2;
+
+        if ((hb + vb) <= (hborder + vborder)) {
+            hborder = hb;
+            vborder = vb;
+            best = rr;
+        }
+    }
+
+    if (best == -1) {
+        ESP_LOGI(TAG, "could not initialize with %d %d", frameWidth, frameHeight);
+        return false;
+    }
+
+    int scale = 1;
+    if (best < 3) {
+        scale = 2;
+    }
+    int screenWidth = rw[best] * scale;
+    int screenHeight = rh[best] * scale;
+
+    ESP_LOGI(TAG, "frame %d %d: screen %d %d %d %d %d", frameWidth, frameHeight, screenWidth, screenHeight, scale, hborder, vborder);
+    return init(screenWidth, screenHeight, scale, hborder, vborder, bits, NULL, true);
+}
+
 bool VGA::init(int width, int height, int scale, int hborder, int vborder, int bits, int* pins, bool usePsram) {
 
 	// temp replace
@@ -331,7 +388,7 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
         }
     } else if (vga->_frameScale == 2 && vga->_colorBits == 3) {
         uint8_t* bbptr = bbuf;
-        //bbptr += vga->_hBorder*vga->_frameScale;
+        bbptr += vga->_hBorder*vga->_frameScale;
         uint8_t pixelBits;
         for (int y = 0; y < lines; y++) {
             uint8_t* lineptr = bbptr;
@@ -374,7 +431,7 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
                 pptr++;
             }
             bbptr = lineptr + vga->_screenWidth;
-            memcpy(bbptr, lineptr, vga->_screenWidth);
+            memcpy(bbptr, lineptr, vga->_frameWidth*vga->_frameScale);
             bbptr += vga->_screenWidth;
         }
     }
