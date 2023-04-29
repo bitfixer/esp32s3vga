@@ -238,6 +238,17 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     return true;
 }
 
+bool deinit() {
+    esp_err_t err = esp_lcd_panel_del(_panel_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "error deleting rgb lcd panel");
+        return false;
+    }
+
+    _panel_handle = NULL;
+    return true;
+}
+
 void VGA::vsyncWait() {
 	// get draw semaphore
     xSemaphoreGive(_sem_gui_ready);
