@@ -136,7 +136,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     panel_config.pclk_gpio_num = VGA_PIN_NUM_PCLK;
     panel_config.vsync_gpio_num = VGA_PIN_NUM_VSYNC;
     panel_config.hsync_gpio_num = VGA_PIN_NUM_HSYNC;
-    panel_config.de_gpio_num = 0;
+    panel_config.de_gpio_num = VGA_PIN_NUM_DE;
 
     // set defaults for pins
     panel_config.data_gpio_nums[0] = VGA_PIN_NUM_DATA0;
@@ -207,7 +207,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     if (_colorBits == 3) {
         fbSize /= 2;
     } else if (_colorBits == 1) {
-        fbSize /= 1;
+        fbSize /= 8;
     }
 
     for (int i = 0; i < 2; i++) {
