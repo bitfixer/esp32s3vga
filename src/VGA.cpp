@@ -85,7 +85,31 @@ bool VGA::initWithSize(int frameWidth, int frameHeight, int bits) {
     return init(screenWidth, screenHeight, scale, hborder, vborder, bits, NULL, true);
 }
 
+bool VGA::validConfig(int width, int height, int scale, int hborder, int vborder, int bits, int* pins, bool usePsram) {
+
+    if (scale < 1 || scale > 2) {
+        return false;
+    }
+
+    if (width == 800 && height == 600) {
+        return true;
+    } else if (width == 640 && height == 480) {
+        return true;
+    } else if (width == 640 && height == 400) {
+        return true;
+    } else if (width == 640 && height == 350) {
+        return true;
+    }
+
+    return false;
+}
+
 bool VGA::init(int width, int height, int scale, int hborder, int vborder, int bits, int* pins, bool usePsram) {
+
+    if (!validConfig(width, height, scale, hborder, vborder, bits, pins, usePsram)) {
+        ESP_LOGE("error: invalid configuration");
+        return false;
+    }
 
 	// temp replace
 	_frameScale = scale;
