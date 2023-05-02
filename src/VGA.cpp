@@ -107,7 +107,7 @@ bool VGA::validConfig(int width, int height, int scale, int hborder, int vborder
 bool VGA::init(int width, int height, int scale, int hborder, int vborder, int bits, int* pins, bool usePsram) {
 
     if (!validConfig(width, height, scale, hborder, vborder, bits, pins, usePsram)) {
-        ESP_LOGE("error: invalid configuration");
+        ESP_LOGE(TAG, "error: invalid configuration");
         return false;
     }
 
@@ -263,7 +263,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     return true;
 }
 
-bool deinit() {
+bool VGA::deinit() {
     esp_err_t err = esp_lcd_panel_del(_panel_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "error deleting rgb lcd panel");
@@ -323,7 +323,7 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
     if (bufLineIndex >= vga->_frameHeight) {
         // past the bottom of the frame
         memset(bounce_buf, 0, len_bytes);
-        if (pos_px >= _lastBounceBufferPos) {
+        if (pos_px >= vga->_lastBounceBufferPos) {
             vga->swapBuffers();
         }
         return true;
@@ -524,7 +524,7 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
         }
     }
 
-    if (pos_px >= _lastBounceBufferPos) {
+    if (pos_px >= vga->_lastBounceBufferPos) {
         vga->swapBuffers();
     }
 
