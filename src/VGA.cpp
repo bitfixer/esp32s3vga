@@ -246,6 +246,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     }
 
     memset(_frameBuffers[0], 255, _frameWidth*_frameHeight);
+    _lastBounceBufferPos = _screenWidth*(_screenHeight-_bounceBufferLines);
 
     ESP_LOGI(TAG, "Register event callbacks");
     esp_lcd_rgb_panel_event_callbacks_t cbs = {
@@ -291,6 +292,17 @@ bool VGA::vsyncEvent(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event
 	return true;
 }
 
+void VGA::swapBuffers() {
+    if (xSemaphoreTakeFromISR(_sem_gui_ready, NULL) == pdTRUE) {
+        if (_frameBufferIndex == 0) {
+            _frameBufferIndex = 1;
+        } else {
+            _frameBufferIndex = 0;
+        }
+        xSemaphoreGiveFromISR(_sem_vsync_end, NULL);
+    }
+}
+
 bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px, int len_bytes, void* user_ctx) {
 	VGA* vga = (VGA*)user_ctx;
     uint8_t* bbuf = (uint8_t*)bounce_buf;
@@ -311,15 +323,8 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
     if (bufLineIndex >= vga->_frameHeight) {
         // past the bottom of the frame
         memset(bounce_buf, 0, len_bytes);
-        if (pos_px >= vga->_screenWidth*(vga->_screenHeight-vga->_bounceBufferLines)) {
-            if (xSemaphoreTakeFromISR(vga->_sem_gui_ready, NULL) == pdTRUE) {
-                if (vga->_frameBufferIndex == 0) {
-                    vga->_frameBufferIndex = 1;
-                } else {
-                    vga->_frameBufferIndex = 0;
-                }
-                xSemaphoreGiveFromISR(vga->_sem_vsync_end, NULL);
-            }
+        if (pos_px >= _lastBounceBufferPos) {
+            vga->swapBuffers();
         }
         return true;
     }
@@ -519,15 +524,8 @@ bool VGA::bounceEvent(esp_lcd_panel_handle_t panel, void* bounce_buf, int pos_px
         }
     }
 
-    if (pos_px >= vga->_screenWidth*(vga->_screenHeight-vga->_bounceBufferLines)) {
-        if (xSemaphoreTakeFromISR(vga->_sem_gui_ready, NULL) == pdTRUE) {
-            if (vga->_frameBufferIndex == 0) {
-                vga->_frameBufferIndex = 1;
-            } else {
-                vga->_frameBufferIndex = 0;
-            }
-            xSemaphoreGiveFromISR(vga->_sem_vsync_end, NULL);
-        }
+    if (pos_px >= _lastBounceBufferPos) {
+        vga->swapBuffers();
     }
 
     return true;
