@@ -3,8 +3,10 @@
 #include <esp_lcd_panel_ops.h>
 #include <string.h>
 
-#define VGA_PIN_NUM_HSYNC          4
-#define VGA_PIN_NUM_VSYNC          3
+// default pin values chosen to avoid conflicting with spi, i2c, or serial.
+
+#define VGA_PIN_NUM_HSYNC          12
+#define VGA_PIN_NUM_VSYNC          13
 #define VGA_PIN_NUM_DE             -1
 
 // note: PCLK pin is not needed for VGA output.
@@ -14,16 +16,16 @@
 #if PATCHED_LCD_DRIVER
 #define VGA_PIN_NUM_PCLK           -1
 #else
-#define VGA_PIN_NUM_PCLK           5
+#define VGA_PIN_NUM_PCLK           21
 #endif
-#define VGA_PIN_NUM_DATA0          6
-#define VGA_PIN_NUM_DATA1          7
-#define VGA_PIN_NUM_DATA2          8
-#define VGA_PIN_NUM_DATA3          9
-#define VGA_PIN_NUM_DATA4          34
-#define VGA_PIN_NUM_DATA5          36
-#define VGA_PIN_NUM_DATA6          37
-#define VGA_PIN_NUM_DATA7          35
+#define VGA_PIN_NUM_DATA0          1
+#define VGA_PIN_NUM_DATA1          2
+#define VGA_PIN_NUM_DATA2          3
+#define VGA_PIN_NUM_DATA3          4
+#define VGA_PIN_NUM_DATA4          5
+#define VGA_PIN_NUM_DATA5          16
+#define VGA_PIN_NUM_DATA6          15
+#define VGA_PIN_NUM_DATA7          14
 #define VGA_PIN_NUM_DISP_EN        -1
 
 static const char *TAG = "vga";
