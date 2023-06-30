@@ -133,7 +133,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
     if (width == 800 && height == 600) {
         pixelClockHz = 40000000;
     } else if (width == 640 && height == 480) {
-        pixelClockHz = 36000000;
+        pixelClockHz = 25000000;
     } else if (width == 640 && height == 400) {
         // note: nominal pixel frequency here is 25.175 MHz
         // 25.0 MHz experimentally shown to generate a less noisy picture,
@@ -196,12 +196,12 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
         panel_config.timings.vsync_front_porch = 1;
         panel_config.timings.vsync_pulse_width = 4;
     } else if (width == 640 && height == 480) {
-        panel_config.timings.hsync_back_porch = 80;
-        panel_config.timings.hsync_front_porch = 56;
-        panel_config.timings.hsync_pulse_width = 56;
-        panel_config.timings.vsync_back_porch = 25;
-        panel_config.timings.vsync_front_porch = 1;
-        panel_config.timings.vsync_pulse_width = 3;
+        panel_config.timings.hsync_back_porch = 48;
+        panel_config.timings.hsync_front_porch = 16;
+        panel_config.timings.hsync_pulse_width = 96;
+        panel_config.timings.vsync_back_porch = 33;
+        panel_config.timings.vsync_front_porch = 10;
+        panel_config.timings.vsync_pulse_width = 2;
     } else if (width == 640 && height == 400) {
         panel_config.timings.hsync_back_porch = 48;
         panel_config.timings.hsync_front_porch = 16;
