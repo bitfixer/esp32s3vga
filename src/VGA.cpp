@@ -236,6 +236,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
         fbSize /= 8;
     }
 
+    _frameBuffersInPsram = usePsram;
     for (int i = 0; i < 2; i++) {
         if (usePsram) {
              ESP_LOGI(TAG, "allocating in spi ram");
@@ -247,7 +248,7 @@ bool VGA::init(int width, int height, int scale, int hborder, int vborder, int b
         assert(_frameBuffers[i]);
     }
 
-    memset(_frameBuffers[0], 255, _frameWidth*_frameHeight);
+    memset(_frameBuffers[0], 255, fbSize);
     _lastBounceBufferPos = _screenWidth*(_screenHeight-_bounceBufferLines);
 
     ESP_LOGI(TAG, "Register event callbacks");
@@ -273,6 +274,16 @@ bool VGA::deinit() {
     }
 
     _panel_handle = NULL;
+
+    for (int i = 0; i < 2; i++) {
+        if (_frameBuffersInPsram) {
+            heap_caps_free(_frameBuffers[i]);
+        } else {
+            free(_frameBuffers[i]);
+        }
+        _frameBuffers[i] = NULL;
+    }
+
     return true;
 }
 
